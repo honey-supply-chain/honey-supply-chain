@@ -20,6 +20,7 @@ export default defineConfig({
     hardhatMainnet: {
       type: "edr-simulated",
       chainType: "l1",
+      hardfork: "osaka",
     },
     hardhatOp: {
       type: "edr-simulated",
