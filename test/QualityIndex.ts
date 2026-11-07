@@ -113,7 +113,7 @@ describe("QualityIndex", function () {
 
     await registry.connect(certBody).setCertification(beekeeper.address, "bafybeicert", 10000);
     await qualityIndex.connect(lab).submitPHQIData(1, emptyPHQI, 10000, "bafybeilab");
-    await qualityIndex.connect(beekeeper).submitMCIOriginData(1, 0);
+    await qualityIndex.connect(beekeeper).submitOrigin(1, 0, "");
     await qualityIndex.connect(awardBody).submitAward(1, 0, "");
 
     const data = await qualityIndex.getQualityData(1);
@@ -125,16 +125,16 @@ describe("QualityIndex", function () {
 
     await registry.connect(certBody).setCertification(beekeeper.address, "bafybeicert", 10000);
     await qualityIndex.connect(lab).submitPHQIData(1, emptyPHQI, 10000, "bafybeilab");
-    await qualityIndex.connect(beekeeper).submitMCIOriginData(1, 10000);
+    await qualityIndex.connect(beekeeper).submitOrigin(1, 10000, "");
     await qualityIndex.connect(awardBody).submitAward(1, 10000, "");
 
     const data = await qualityIndex.getQualityData(1);
     expect(data.mci).to.equal(10000);
   });
 
-  it("rejects submitMCIOriginData from a non-beekeeper", async function () {
+  it("rejects submitOrigin from a non-beekeeper", async function () {
     const { qualityIndex, outsider } = await deploy();
-    await expect(qualityIndex.connect(outsider).submitMCIOriginData(1, 0)).to.revert(ethers);
+    await expect(qualityIndex.connect(outsider).submitOrigin(1, 0, "")).to.revert(ethers);
   });
 
   it("rejects submitAward from a caller without AWARD_BODY_ROLE", async function () {
@@ -149,7 +149,7 @@ describe("QualityIndex", function () {
     await qualityIndex.connect(lab).submitPHQIData(1, {
       normalizedWaterContent: 10000, hmf: 10000, invertaseActivity: 10000, waterContentPercent: 1500,
     }, 10000, "");
-    await qualityIndex.connect(beekeeper).submitMCIOriginData(1, 0);
+    await qualityIndex.connect(beekeeper).submitOrigin(1, 0, "");
     await qualityIndex.connect(awardBody).submitAward(1, 0, "");
 
     const data = await qualityIndex.getQualityData(1);
@@ -164,7 +164,7 @@ describe("QualityIndex", function () {
 
     await registry.connect(certBody).setCertification(beekeeper.address, "bafybeicert", 10000);
     await qualityIndex.connect(lab).submitPHQIData(1, { normalizedWaterContent: 10000, hmf: 10000, invertaseActivity: 10000, waterContentPercent: 1500 }, 10000, "");
-    await qualityIndex.connect(beekeeper).submitMCIOriginData(1, 10000);
+    await qualityIndex.connect(beekeeper).submitOrigin(1, 10000, "");
     await qualityIndex.connect(awardBody).submitAward(1, 10000, "");
     await qualityIndex.connect(beekeeper).submitSIData(1, {
       forage: 10000, lightIntensity: 10000, waterSource: 10000, summerTemperature: 10000,

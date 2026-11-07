@@ -54,8 +54,8 @@ async function main() {
     }, 5000, "bafybeiexamplecid")
   ).wait();
 
-  console.log("5) MCI-Herkunftsdaten einreichen (Region)...");
-  await (await qualityIndex.connect(beekeeper).submitMCIOriginData(batchId, 9000)).wait();
+  console.log("5) MCI-Herkunftsdaten einreichen (Region + Herkunftsdokument)...");
+  await (await qualityIndex.connect(beekeeper).submitOrigin(batchId, 9000, "bafybeiexampleorigin")).wait();
 
   console.log("6) Prämierungsurkunde einreichen...");
   await (await qualityIndex.connect(awardBody).submitAward(batchId, 5000, "bafybeiawardcid")).wait();

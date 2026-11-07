@@ -33,7 +33,7 @@ describe("PricingModel", function () {
     await qualityIndex.connect(lab).submitPHQIData(batchId, {
       normalizedWaterContent: 10000, hmf: 10000, invertaseActivity: 10000, waterContentPercent: 1500,
     }, 10000, "");
-    await qualityIndex.connect(beekeeper).submitMCIOriginData(batchId, 0);
+    await qualityIndex.connect(beekeeper).submitOrigin(batchId, 0, "");
     await qualityIndex.connect(awardBody).submitAward(batchId, 0, "");
   }
 

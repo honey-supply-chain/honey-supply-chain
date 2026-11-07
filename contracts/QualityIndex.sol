@@ -134,19 +134,14 @@ contract QualityIndex {
         }
     }
 
-    function submitMCIOriginData(
+    function submitOrigin(
         uint256 batchId,
-        uint16 region
+        uint16 region,
+        string calldata ipfsCid
     ) external onlyRole(actorRegistry.BEEKEEPER_ROLE()) {
         (, uint16 organicScore) = actorRegistry.certifications(msg.sender);
         mciData[batchId].region = region;
         mciData[batchId].organic = organicScore;
-    }
-
-    function submitOrigin(
-        uint256 batchId,
-        string calldata ipfsCid
-    ) external onlyRole(actorRegistry.BEEKEEPER_ROLE()) {
         originCid[batchId] = ipfsCid;
     }
 

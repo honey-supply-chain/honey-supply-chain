@@ -275,10 +275,9 @@ async function runBatch(runNo: number, run: ResolvedRun, steps: Row[]): Promise<
   await onChain("submitSIData", "beekeeper", () => qualityIndex.connect(beekeeper).submitSIData(batchId, si));
 
   const origin = await post("/mci/origin", { region });
-  await onChain("submitMCIOriginData", "beekeeper", () => qualityIndex.connect(beekeeper).submitMCIOriginData(batchId, origin.region));
-
   const originUpload = await post("/origin", { regions: stands.map((s) => STATIONS[s.standId].name) });
-  const originRow = await onChain("submitOrigin", "beekeeper", () => qualityIndex.connect(beekeeper).submitOrigin(batchId, originUpload.cid));
+  const originRow = await onChain("submitOrigin", "beekeeper", () =>
+    qualityIndex.connect(beekeeper).submitOrigin(batchId, origin.region, originUpload.cid));
   originRow.note = `cid=${originUpload.cid}`;
 
   const labResult = await viaSimulator("labAnalysis", "lab", "/lab/analysis",
