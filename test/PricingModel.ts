@@ -103,4 +103,47 @@ describe("PricingModel", function () {
 
     await expect(pricingModel.calculatePrice(1, 500)).to.revert(ethers);
   });
+
+  it("calculatePriceForQI matches calculatePrice for the batch's current QI", async function () {
+    const { pricingModel, qualityIndex, admin, beekeeper, lab, awardBody } = await deploy();
+    await pricingModel.connect(admin).setFloorPrice(500, 480);
+    await submitGoodQualityBatch(qualityIndex, beekeeper, lab, awardBody, 1);
+
+    const qi = await qualityIndex.calculateQI(1);
+    expect(await pricingModel.calculatePriceForQI(qi, 500)).to.equal(await pricingModel.calculatePrice(1, 500));
+  });
+
+  it("calculatePriceForQI ignores sellability, unlike calculatePrice", async function () {
+    const { pricingModel, admin } = await deploy();
+    await pricingModel.connect(admin).setFloorPrice(500, 480);
+
+    expect(await pricingModel.calculatePriceForQI(0, 500)).to.equal(480);
+  });
+
+  it("reverts calculatePriceForQI when no floor price is set for the requested jar size", async function () {
+    const { pricingModel } = await deploy();
+    await expect(pricingModel.calculatePriceForQI(5000, 500)).to.revert(ethers);
+  });
+
+  it("calculatePriceForPHQI combines an arbitrary PHQI with the batch's current MCI/SI", async function () {
+    const { pricingModel, qualityIndex, admin, beekeeper, lab, awardBody } = await deploy();
+    await pricingModel.connect(admin).setFloorPrice(500, 480);
+    await submitGoodQualityBatch(qualityIndex, beekeeper, lab, awardBody, 1);
+
+    const qiForOldPhqi = await qualityIndex.calculateQIForPHQI(1, 5000);
+    expect(await pricingModel.calculatePriceForPHQI(1, 5000, 500)).to.equal(
+      await pricingModel.calculatePriceForQI(qiForOldPhqi, 500),
+    );
+  });
+
+  it("calculatePriceForPHQI matches calculatePrice when given the batch's current PHQI", async function () {
+    const { pricingModel, qualityIndex, admin, beekeeper, lab, awardBody } = await deploy();
+    await pricingModel.connect(admin).setFloorPrice(500, 480);
+    await submitGoodQualityBatch(qualityIndex, beekeeper, lab, awardBody, 1);
+
+    const data = await qualityIndex.getQualityData(1);
+    expect(await pricingModel.calculatePriceForPHQI(1, data.phqi, 500)).to.equal(
+      await pricingModel.calculatePrice(1, 500),
+    );
+  });
 });

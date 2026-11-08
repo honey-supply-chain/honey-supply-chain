@@ -203,6 +203,45 @@ describe("QualityIndex", function () {
     expect(data.state).to.equal(0);
   });
 
+  it("emits PHQIRevised with the old PHQI when PHQI is resubmitted after a retest", async function () {
+    const { qualityIndex, supplyChain, lab } = await deploy();
+
+    await qualityIndex.connect(lab).submitPHQIData(1, {
+      normalizedWaterContent: 10000, hmf: 10000, invertaseActivity: 10000, waterContentPercent: 1500,
+    }, 0, "");
+    await qualityIndex.connect(supplyChain).triggerTemperatureViolation(1);
+
+    await expect(
+      qualityIndex.connect(lab).submitPHQIData(1, {
+        normalizedWaterContent: 5000, hmf: 5000, invertaseActivity: 5000, waterContentPercent: 1500,
+      }, 0, ""),
+    ).to.emit(qualityIndex, "PHQIRevised").withArgs(1, 10000);
+  });
+
+  it("does not emit PHQIRevised on the first PHQI submission", async function () {
+    const { qualityIndex, lab } = await deploy();
+
+    await expect(
+      qualityIndex.connect(lab).submitPHQIData(1, {
+        normalizedWaterContent: 10000, hmf: 10000, invertaseActivity: 10000, waterContentPercent: 1500,
+      }, 0, ""),
+    ).to.not.emit(qualityIndex, "PHQIRevised");
+  });
+
+  it("calculateQIForPHQI uses the batch's current MCI/SI with an arbitrary PHQI", async function () {
+    const { qualityIndex, beekeeper, awardBody, lab } = await deploy();
+
+    await qualityIndex.connect(beekeeper).submitSIData(1, { ...emptySI, forage: 10000 });
+    await qualityIndex.connect(lab).submitPHQIData(1, {
+      normalizedWaterContent: 10000, hmf: 10000, invertaseActivity: 10000, waterContentPercent: 1500,
+    }, 10000, "");
+    await qualityIndex.connect(beekeeper).submitOrigin(1, 0, "");
+    await qualityIndex.connect(awardBody).submitAward(1, 0, "");
+
+    expect(await qualityIndex.calculateQIForPHQI(1, 5000)).to.equal(3879);
+    expect(await qualityIndex.calculateQIForPHQI(1, 10000)).to.equal(await qualityIndex.calculateQI(1));
+  });
+
   it("rejects triggerTemperatureViolation from a caller that is not SupplyChain", async function () {
     const { qualityIndex, outsider } = await deploy();
     await expect(qualityIndex.connect(outsider).triggerTemperatureViolation(1)).to.revert(ethers);

@@ -112,6 +112,7 @@ contract QualityIndex {
     }
 
     event PHQIDataSubmitted(uint256 indexed batchId, string ipfsCid);
+    event PHQIRevised(uint256 indexed batchId, uint256 oldPhqi);
 
     function submitPHQIData(
         uint256 batchId,
@@ -119,11 +120,17 @@ contract QualityIndex {
         uint16 variety,
         string calldata ipfsCid
     ) external onlyRole(actorRegistry.LAB_ROLE()) {
+        uint256 oldPhqi = qualityData[batchId].phqi;
+
         (uint256 phqi, GatekeeperReason reason) = calculatePHQI(input);
         qualityData[batchId].phqi = phqi;
         mciData[batchId].variety = variety;
         phqiReportCid[batchId] = ipfsCid;
         emit PHQIDataSubmitted(batchId, ipfsCid);
+
+        if (oldPhqi != 0) {
+            emit PHQIRevised(batchId, oldPhqi);
+        }
 
         if (reason == GatekeeperReason.WaterContentExceeded) {
             gatekeeperFlags[batchId] = GatekeeperReason.WaterContentExceeded;
@@ -209,11 +216,14 @@ contract QualityIndex {
                 MCI_AWARD) / SCALE;
     }
 
-    function calculateQI(uint256 batchId) public view returns (uint256) {
+    function calculateQIForPHQI(uint256 batchId, uint256 phqi) public view returns (uint256) {
         uint256 si = qualityData[batchId].si;
-        uint256 phqi = qualityData[batchId].phqi;
         uint256 mci = calculateMCI(batchId);
         return (phqi * QI_PHQI + mci * QI_MCI + si * QI_SI) / SCALE;
+    }
+
+    function calculateQI(uint256 batchId) public view returns (uint256) {
+        return calculateQIForPHQI(batchId, qualityData[batchId].phqi);
     }
 
     function checkGatekeeper(

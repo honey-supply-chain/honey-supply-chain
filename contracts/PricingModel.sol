@@ -35,15 +35,24 @@ contract PricingModel {
         floorPrices[jarSizeGrams] = priceCents;
     }
 
+    function calculatePriceForQI(uint256 qi, uint32 jarSizeGrams) public view returns (uint256) {
+        uint256 floor = floorPrices[jarSizeGrams];
+        require(floor > 0, "PricingModel: no floor price set for this jar size");
+
+        return (floor * (SCALE_SQUARED + alpha * qi)) / SCALE_SQUARED;
+    }
+
     function calculatePrice(uint256 batchId, uint32 jarSizeGrams) public view returns (uint256) {
         (bool sellable, ) = qualityIndex.checkGatekeeper(batchId);
         require(sellable, "PricingModel: batch is not sellable");
 
-        uint256 floor = floorPrices[jarSizeGrams];
-        require(floor > 0, "PricingModel: no floor price set for this jar size");
-
         uint256 qi = qualityIndex.calculateQI(batchId);
-        return (floor * (SCALE_SQUARED + alpha * qi)) / SCALE_SQUARED;
+        return calculatePriceForQI(qi, jarSizeGrams);
+    }
+
+    function calculatePriceForPHQI(uint256 batchId, uint256 phqi, uint32 jarSizeGrams) external view returns (uint256) {
+        uint256 qi = qualityIndex.calculateQIForPHQI(batchId, phqi);
+        return calculatePriceForQI(qi, jarSizeGrams);
     }
 
     function getPrice(uint256 batchId, uint32 jarSizeGrams) external view returns (uint256) {
