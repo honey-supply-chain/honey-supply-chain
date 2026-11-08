@@ -324,11 +324,8 @@ async function runBatch(runNo: number, run: ResolvedRun, steps: Row[]): Promise<
       supplyChain.connect(processor).processAndBottle(batchId, [JAR_GRAMS], [jars]));
     bottled = true;
 
-    if (chain === "DIRECT") {
-      await onChain("recordRetailReceipt", "beekeeper", () => supplyChain.connect(beekeeper).recordRetailReceipt(batchId));
-    } else {
+    if (chain !== "DIRECT") {
       await transportLeg(processor, processorName, retailer.address, "retailer");
-      await onChain("recordRetailReceipt", "retailer", () => supplyChain.connect(retailer).recordRetailReceipt(batchId));
     }
   }
 

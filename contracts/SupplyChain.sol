@@ -37,7 +37,8 @@ contract SupplyChain {
     mapping(uint256 => LocationContribution[]) public batchLocations;
     mapping(uint256 => CustodyRecord[]) public custodyHistory;
     mapping(uint256 => address) public currentHolder;
-    mapping(uint256 => uint256) public retailReceiptTimestamp;
+
+    event BatchBottled(uint256 indexed batchId);
 
     modifier onlyRole(bytes32 role) {
         require(
@@ -183,6 +184,7 @@ contract SupplyChain {
             msg.sender
         );
         honeyToken.markBatchProcessed(batchId);
+        emit BatchBottled(batchId);
     }
 
     function recordTransportData(
@@ -209,21 +211,6 @@ contract SupplyChain {
         ) {
             qualityIndex.triggerTemperatureViolation(batchId);
         }
-    }
-
-    function recordRetailReceipt(
-        uint256 batchId
-    )
-        external
-        onlyRole(actorRegistry.RETAILER_ROLE())
-        onlyCurrentHolder(batchId)
-        onlySellable(batchId)
-    {
-        require(
-            honeyToken.processedBatches(batchId),
-            "SupplyChain: batch has not been bottled yet"
-        );
-        retailReceiptTimestamp[batchId] = block.timestamp;
     }
 
     function getBatch(
