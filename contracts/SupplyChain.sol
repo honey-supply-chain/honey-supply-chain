@@ -23,14 +23,14 @@ contract SupplyChain {
     }
 
     struct LocationContribution {
-        uint256 standId;
-        uint256 quantity;
+        uint64 standId;
+        uint128 quantity;
     }
 
     struct CustodyRecord {
         address from;
+        uint64 timestamp;
         address to;
-        uint256 timestamp;
     }
 
     mapping(uint256 => Batch) public batches;
@@ -115,8 +115,10 @@ contract SupplyChain {
         currentHolder[batchId] = msg.sender;
 
         for (uint256 i = 0; i < standIds.length; i++) {
+            require(standIds[i] <= type(uint64).max, "SupplyChain: standId too large");
+            require(locationQuantities[i] <= type(uint128).max, "SupplyChain: quantity too large");
             batchLocations[batchId].push(
-                LocationContribution(standIds[i], locationQuantities[i])
+                LocationContribution(uint64(standIds[i]), uint128(locationQuantities[i]))
             );
         }
 
@@ -129,7 +131,7 @@ contract SupplyChain {
     ) external onlyCurrentHolder(batchId) onlySellable(batchId) {
         address from = msg.sender;
         currentHolder[batchId] = to;
-        custodyHistory[batchId].push(CustodyRecord(from, to, block.timestamp));
+        custodyHistory[batchId].push(CustodyRecord(from, uint64(block.timestamp), to));
 
         uint256[] memory candidateIds = new uint256[](4);
         candidateIds[0] = batchId;
