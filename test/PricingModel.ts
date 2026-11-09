@@ -32,9 +32,9 @@ describe("PricingModel", function () {
     });
     await qualityIndex.connect(lab).submitPHQIData(batchId, {
       normalizedWaterContent: 10000, hmf: 10000, invertaseActivity: 10000, waterContentPercent: 1500,
-    }, 10000, "");
-    await qualityIndex.connect(beekeeper).submitOrigin(batchId, 0, "");
-    await qualityIndex.connect(awardBody).submitAward(batchId, 0, "");
+    }, 10000, ethers.ZeroHash);
+    await qualityIndex.connect(beekeeper).submitOrigin(batchId, 0, ethers.ZeroHash);
+    await qualityIndex.connect(awardBody).submitAward(batchId, 0, ethers.ZeroHash);
   }
 
   it("sets the constructor parameters", async function () {
@@ -92,7 +92,7 @@ describe("PricingModel", function () {
     await pricingModel.connect(admin).setFloorPrice(500, 480);
     await qualityIndex.connect(lab).submitPHQIData(1, {
       normalizedWaterContent: 0, hmf: 0, invertaseActivity: 0, waterContentPercent: 2400,
-    }, 0, "");
+    }, 0, ethers.ZeroHash);
 
     await expect(pricingModel.calculatePrice(1, 500)).to.revert(ethers);
   });

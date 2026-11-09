@@ -19,7 +19,7 @@ contract ActorRegistry is AccessControl {
     }
 
     struct Certification {
-        string ipfsCid;
+        bytes32 ipfsCid;
         uint16 organicScore;
     }
 
@@ -43,7 +43,7 @@ contract ActorRegistry is AccessControl {
 
     function setCertification(
         address actorAddress,
-        string calldata ipfsCid,
+        bytes32 ipfsCid,
         uint16 organicScore
     ) external onlyRole(CERTIFICATION_BODY_ROLE) {
         certifications[actorAddress] = Certification(ipfsCid, organicScore);

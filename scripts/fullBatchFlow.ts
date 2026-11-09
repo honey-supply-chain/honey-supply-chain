@@ -2,6 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { formatEther, parseEther } from "ethers";
 import { deployAndBootstrap } from "./lib/chainSetup.js";
+import { cidToBytes32 } from "./lib/cid.js";
 
 const NETWORK = process.env.NETWORK ?? "localhost";
 const SIMULATOR_URL = process.env.SIMULATOR_URL ?? "http://127.0.0.1:8081/api";
@@ -277,7 +278,7 @@ async function runBatch(runNo: number, run: ResolvedRun, steps: Row[]): Promise<
   const origin = await post("/mci/origin", { region });
   const originUpload = await post("/origin", { regions: stands.map((s) => STATIONS[s.standId].name) });
   const originRow = await onChain("submitOrigin", "beekeeper", () =>
-    qualityIndex.connect(beekeeper).submitOrigin(batchId, origin.region, originUpload.cid));
+    qualityIndex.connect(beekeeper).submitOrigin(batchId, origin.region, cidToBytes32(originUpload.cid)));
   originRow.note = `cid=${originUpload.cid}`;
 
   const labResult = await viaSimulator("labAnalysis", "lab", "/lab/analysis",

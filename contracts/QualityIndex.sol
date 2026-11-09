@@ -66,17 +66,17 @@ contract QualityIndex {
     }
 
     struct QualityData {
-        uint256 si;
-        uint256 phqi;
+        uint16 si;
+        uint16 phqi;
     }
 
     mapping(uint256 => QualityData) public qualityData;
     mapping(uint256 => MCIData) public mciData;
     mapping(uint256 => BatchState) public batchStates;
     mapping(uint256 => GatekeeperReason) public gatekeeperFlags;
-    mapping(uint256 => string) public phqiReportCid;
-    mapping(uint256 => string) public awardCertificateCid;
-    mapping(uint256 => string) public originCid;
+    mapping(uint256 => bytes32) public phqiReportCid;
+    mapping(uint256 => bytes32) public awardCertificateCid;
+    mapping(uint256 => bytes32) public originCid;
 
     modifier onlySupplyChain() {
         require(
@@ -108,22 +108,22 @@ contract QualityIndex {
         uint256 batchId,
         SIInput calldata input
     ) external onlyRole(actorRegistry.BEEKEEPER_ROLE()) {
-        qualityData[batchId].si = calculateSI(input);
+        qualityData[batchId].si = uint16(calculateSI(input));
     }
 
-    event PHQIDataSubmitted(uint256 indexed batchId, string ipfsCid);
+    event PHQIDataSubmitted(uint256 indexed batchId, bytes32 ipfsCid);
     event PHQIRevised(uint256 indexed batchId, uint256 oldPhqi);
 
     function submitPHQIData(
         uint256 batchId,
         PHQIInput calldata input,
         uint16 variety,
-        string calldata ipfsCid
+        bytes32 ipfsCid
     ) external onlyRole(actorRegistry.LAB_ROLE()) {
         uint256 oldPhqi = qualityData[batchId].phqi;
 
         (uint256 phqi, GatekeeperReason reason) = calculatePHQI(input);
-        qualityData[batchId].phqi = phqi;
+        qualityData[batchId].phqi = uint16(phqi);
         mciData[batchId].variety = variety;
         phqiReportCid[batchId] = ipfsCid;
         emit PHQIDataSubmitted(batchId, ipfsCid);
@@ -144,7 +144,7 @@ contract QualityIndex {
     function submitOrigin(
         uint256 batchId,
         uint16 region,
-        string calldata ipfsCid
+        bytes32 ipfsCid
     ) external onlyRole(actorRegistry.BEEKEEPER_ROLE()) {
         (, uint16 organicScore) = actorRegistry.certifications(msg.sender);
         mciData[batchId].region = region;
@@ -155,7 +155,7 @@ contract QualityIndex {
     function submitAward(
         uint256 batchId,
         uint16 level,
-        string calldata ipfsCid
+        bytes32 ipfsCid
     ) external onlyRole(actorRegistry.AWARD_BODY_ROLE()) {
         mciData[batchId].award = level;
         awardCertificateCid[batchId] = ipfsCid;

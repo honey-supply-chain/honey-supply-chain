@@ -41,22 +41,24 @@ describe("ActorRegistry", function () {
         expect(await registry.hasRole(BEEKEEPER_ROLE, beekeeper.address)).to.equal(true);
     });
 
+    const exampleCid = ethers.encodeBytes32String("bafybeituwoexamplecid");
+
     it("allows a CERTIFICATION_BODY_ROLE holder to set a certification CID", async function () {
         const { registry, admin, certBody, beekeeper } = await deploy();
         const CERTIFICATION_BODY_ROLE = await registry.CERTIFICATION_BODY_ROLE();
         await registry.connect(admin).grantRole(CERTIFICATION_BODY_ROLE, certBody.address);
 
-        await registry.connect(certBody).setCertification(beekeeper.address, "bafybeituwoexamplecid", 5000);
+        await registry.connect(certBody).setCertification(beekeeper.address, exampleCid, 5000);
 
         const certification = await registry.certifications(beekeeper.address);
-        expect(certification.ipfsCid).to.equal("bafybeituwoexamplecid");
+        expect(certification.ipfsCid).to.equal(exampleCid);
         expect(certification.organicScore).to.equal(5000);
     });
 
     it("rejects setCertification from an account without CERTIFICATION_BODY_ROLE", async function () {
         const { registry, outsider, beekeeper } = await deploy();
         await expect(
-            registry.connect(outsider).setCertification(beekeeper.address, "bafybeituwoexamplecid", 5000),
+            registry.connect(outsider).setCertification(beekeeper.address, exampleCid, 5000),
         ).to.revert(ethers);
     });
 });

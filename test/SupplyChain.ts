@@ -190,7 +190,7 @@ describe("SupplyChain", function () {
   it("blocks transferCustody once the batch is not sellable", async function () {
     const { supplyChain, qualityIndex, beekeeper, bottler, lab } = await deploy();
     await supplyChain.connect(beekeeper).registerHarvestBatch(2026, [1], [1000]);
-    await qualityIndex.connect(lab).submitPHQIData(1, { ...emptyPHQI, waterContentPercent: 2400 }, 0, "");
+    await qualityIndex.connect(lab).submitPHQIData(1, { ...emptyPHQI, waterContentPercent: 2400 }, 0, ethers.ZeroHash);
 
     await expect(supplyChain.connect(beekeeper).transferCustody(1, bottler.address)).to.revert(ethers);
   });
@@ -210,7 +210,7 @@ describe("SupplyChain", function () {
     await supplyChain.connect(beekeeper).registerHarvestBatch(2026, [1], [1000]);
     await honeyToken.connect(beekeeper).setApprovalForAll(await supplyChain.getAddress(), true);
     await supplyChain.connect(beekeeper).transferCustody(1, bottler.address);
-    await qualityIndex.connect(lab).submitPHQIData(1, { ...emptyPHQI, waterContentPercent: 2400 }, 0, "");
+    await qualityIndex.connect(lab).submitPHQIData(1, { ...emptyPHQI, waterContentPercent: 2400 }, 0, ethers.ZeroHash);
 
     await expect(supplyChain.connect(bottler).processAndBottle(1, [500], [2])).to.revert(ethers);
   });

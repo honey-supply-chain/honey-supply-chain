@@ -118,9 +118,9 @@ describe("ProductGateway", function () {
     });
     await qualityIndex.connect(lab).submitPHQIData(1, {
       normalizedWaterContent: 10000, hmf: 10000, invertaseActivity: 10000, waterContentPercent: 1500,
-    }, 10000, "");
-    await qualityIndex.connect(beekeeper).submitOrigin(1, 0, "");
-    await qualityIndex.connect(awardBody).submitAward(1, 0, "");
+    }, 10000, ethers.ZeroHash);
+    await qualityIndex.connect(beekeeper).submitOrigin(1, 0, ethers.ZeroHash);
+    await qualityIndex.connect(awardBody).submitAward(1, 0, ethers.ZeroHash);
 
     const fromGateway = await gateway.getPrice(1, 500);
     const fromPricingModel = await pricingModel.getPrice(1, 500);
